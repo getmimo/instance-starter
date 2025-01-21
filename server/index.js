@@ -2,12 +2,22 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { setupViteMiddleware } from './viteMiddleware.js';
+import { initializeDatabase, runMigrations } from './database/client.js';
+import { DatabaseOperations } from './database/operations.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+
+// The code below is for database usage. Uncomment in case a database is needed.
+// Initialize database
+// const db = initializeDatabase();
+// const dbOps = new DatabaseOperations(db);
+// Run migrations
+// await runMigrations(db);
 
 // Body parsing middleware
 app.use(express.json());
