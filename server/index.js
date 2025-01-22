@@ -2,14 +2,14 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { setupViteMiddleware } from './viteMiddleware.js';
-import { initializeDatabase, runMigrations } from './database/client.js';
+import { connect } from './database/client.js';
 import { DatabaseOperations } from './database/operations.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 
 // The code below is for database usage. Uncomment in case a database is needed.
@@ -40,6 +40,16 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-}); 
+async function startServer() {
+    try {
+        // await connect();
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error('Failed to start server:', err);
+        process.exit(1);
+    }
+}
+
+startServer(); 
