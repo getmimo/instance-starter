@@ -1,5 +1,6 @@
 import { createServer } from 'vite';
 import { startServer } from '../server/index.js';
+import { vitePort } from '../vite.config.js';
 
 async function startDev() {
   // Start the Express API server first
@@ -11,7 +12,7 @@ async function startDev() {
   });
 
   const x = await vite.listen();
-  console.log('Vite dev server running on port 3000');
+  console.log(`Vite dev server running on port ${vite.config.server.port}`);
 }
 
 startDev(); 
