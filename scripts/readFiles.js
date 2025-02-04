@@ -9,7 +9,7 @@ const rootDir = path.resolve(__dirname, '../');
 // Additional paths to exclude from the file list
 const ADDITIONAL_EXCLUDES = [
   'server/scripts/**',
-  'scripts/**',
+  'scripts/readFiles.js',
   '.git',
   'package-lock.json',
   'project-files.json'
