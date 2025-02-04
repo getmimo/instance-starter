@@ -1,6 +1,5 @@
 import { createServer } from 'vite';
 import { startServer } from '../server/index.js';
-import { vitePort } from '../vite.config.js';
 
 async function startDev() {
   // Start the Express API server first

@@ -16,12 +16,12 @@
   },
   {
     "name": "client/src/App.jsx",
-    "content": "import React from 'react';\n\nfunction App() {\n  const [data, setData] = React.useState(null);\n\n  React.useEffect(() => {\n    fetch('/api/hello')\n      .then(response => response.json())\n      .then(data => setData(data))\n      .catch(error => {\n        console.error('Error fetching data:', error);\n      });\n  }, []);\n\n  return (\n    <div className=\"min-h-screen bg-gray-100\">\n      <div className=\"container mx-auto px-4 py-8\">\n        <h1 className=\"text-4xl font-bold text-red-900\">\n          No-Code Project Creator 1\n        </h1>\n        {data && <p>{data.message}</p>}\n      </div>\n    </div>\n  );\n}\n\nexport default App; ",
+    "content": "import React from 'react';\n\nfunction App() {\n  const [data, setData] = React.useState(null);\n\n  React.useEffect(() => {\n    fetch('/api/hello')\n      .then(response => response.json())\n      .then(data => setData(data))\n      .catch(error => {\n        console.error('Error fetching data:', error);\n      });\n  }, []);\n\n  return (\n    <div className=\"min-h-screen bg-gray-100\">\n      <div className=\"container mx-auto px-4 py-8\">\n        <h1 className=\"text-4xl font-bold text-red-500\">\n          No-Code Project Creator 1\n        </h1>\n        {data && <p>{data.message}</p>}\n      </div>\n    </div>\n  );\n}\n\nexport default App; ",
     "codeLanguage": "jsx"
   },
   {
     "name": "client/src/index.css",
-    "content": "@import \"tailwindcss\";",
+    "content": "@tailwind base;\n@tailwind components;\n@tailwind utilities;",
     "codeLanguage": "css"
   },
   {
@@ -30,43 +30,23 @@
     "codeLanguage": "jsx"
   },
   {
-    "name": "drizzle.config.js",
-    "content": "export default {\n  schema: './server/database/schema.js',\n  out: './drizzle/migrations',\n  driver: 'better-sqlite3',\n  dbCredentials: {\n    url: './database.db',\n  },\n}; ",
-    "codeLanguage": "javascript"
-  },
-  {
     "name": "package.json",
-    "content": "{\n  \"name\": \"mimo-magic-starter\",\n  \"private\": true,\n  \"version\": \"0.1.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"node scripts/dev.js\",\n    \"dev:vite\": \"vite\",\n    \"dev:server\": \"node server/index.js\",\n    \"build\": \"vite build\",\n    \"start\": \"node scripts/dev.js\",\n    \"db:generate\": \"drizzle-kit generate:sqlite\",\n    \"db:push\": \"drizzle-kit push:sqlite\",\n    \"db:studio\": \"drizzle-kit studio\",\n    \"files:read\": \"node scripts/readFiles.js\"\n  },\n  \"dependencies\": {\n    \"drizzle-orm\": \"^0.29.4\",\n    \"express\": \"^4.18.3\",\n    \"ignore\": \"^5.3.1\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"sqlite3\": \"^5.1.7\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"autoprefixer\": \"^10.4.18\",\n    \"drizzle-kit\": \"^0.20.14\",\n    \"postcss\": \"^8.4.35\",\n    \"tailwindcss\": \"^4.0.3\",\n    \"@tailwindcss/vite\": \"^4.0.3\",\n    \"vite\": \"^5.1.4\"\n  }\n}\n",
+    "content": "{\n  \"name\": \"mimo-magic-starter\",\n  \"private\": true,\n  \"version\": \"0.1.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"node scripts/dev.js\",\n    \"dev:vite\": \"vite\",\n    \"dev:server\": \"node server/index.js\",\n    \"build\": \"vite build\",\n    \"start\": \"node scripts/dev.js\",\n    \"files:read\": \"node scripts/readFiles.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.3\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"autoprefixer\": \"^10.4.18\",\n    \"ignore\": \"^7.0.3\",\n    \"postcss\": \"^8.4.35\",\n    \"tailwindcss\": \"^3.4.17\",\n    \"vite\": \"^5.1.4\"\n  }\n}\n",
     "codeLanguage": "json"
   },
   {
+    "name": "postcss.config.js",
+    "content": "export default {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n} ",
+    "codeLanguage": "javascript"
+  },
+  {
     "name": "scripts/dev.js",
-    "content": "import { createServer } from 'vite';\nimport { startServer } from '../server/index.js';\nimport { vitePort } from '../vite.config.js';\n\nasync function startDev() {\n  // Start the Express API server first\n  await startServer();\n\n  // Then start Vite in dev mode\n  const vite = await createServer({\n    configFile: './vite.config.js',\n  });\n\n  const x = await vite.listen();\n  console.log(`Vite dev server running on port ${vite.config.server.port}`);\n}\n\nstartDev(); ",
-    "codeLanguage": "javascript"
-  },
-  {
-    "name": "server/database/client.js",
-    "content": "import sqlite3 from 'sqlite3';\nconst { verbose } = sqlite3;\n\nlet db = null;\n\nexport function connect() {\n    return new Promise((resolve, reject) => {\n        db = new sqlite3.Database('./database.sqlite', (err) => {\n            if (err) {\n                reject(err);\n            } else {\n                resolve(db);\n            }\n        });\n    });\n}\n\nexport function getDb() {\n    if (!db) {\n        throw new Error('Database not connected. Call connect() first.');\n    }\n    return db;\n}\n\nexport function close() {\n    return new Promise((resolve, reject) => {\n        if (db) {\n            db.close((err) => {\n                if (err) {\n                    reject(err);\n                } else {\n                    db = null;\n                    resolve();\n                }\n            });\n        } else {\n            resolve();\n        }\n    });\n}\n\n",
-    "codeLanguage": "javascript"
-  },
-  {
-    "name": "server/database/operations.js",
-    "content": "/**\n * Generic database operations that can be used as templates by LLMs\n * @param {Object} db - The database client instance\n */\nexport class DatabaseOperations {\n  constructor(db) {\n    this.db = db;\n  }\n\n  /**\n   * Generic create operation\n   * @param {Object} table - The table to insert into\n   * @param {Object} data - The data to insert\n   */\n  async create(table, data) {\n    return await this.db.insert(table).values(data).returning();\n  }\n\n  /**\n   * Generic read operation\n   * @param {Object} table - The table to query\n   * @param {Object} where - Where conditions\n   */\n  async read(table, where = {}) {\n    return await this.db.select().from(table).where(where);\n  }\n\n  /**\n   * Generic update operation\n   * @param {Object} table - The table to update\n   * @param {Object} where - Where conditions\n   * @param {Object} data - The data to update\n   */\n  async update(table, where, data) {\n    return await this.db.update(table).set(data).where(where).returning();\n  }\n\n  /**\n   * Generic delete operation\n   * @param {Object} table - The table to delete from\n   * @param {Object} where - Where conditions\n   */\n  async delete(table, where) {\n    return await this.db.delete(table).where(where).returning();\n  }\n} ",
-    "codeLanguage": "javascript"
-  },
-  {
-    "name": "server/database/schema.js",
-    "content": "import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';\n\n/**\n * Example table schema. Modify or remove as needed.\n * This is included as a reference for LLMs to understand the schema structure.\n */\nexport const examples = sqliteTable('examples', {\n  id: integer('id').primaryKey({ autoIncrement: true }),\n  name: text('name').notNull(),\n  description: text('description'),\n  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),\n}); ",
+    "content": "import { createServer } from 'vite';\nimport { startServer } from '../server/index.js';\n\nasync function startDev() {\n  // Start the Express API server first\n  await startServer();\n\n  // Then start Vite in dev mode\n  const vite = await createServer({\n    configFile: './vite.config.js',\n  });\n\n  const x = await vite.listen();\n  console.log(`Vite dev server running on port ${vite.config.server.port}`);\n}\n\nstartDev(); ",
     "codeLanguage": "javascript"
   },
   {
     "name": "server/index.js",
-    "content": "import express from 'express';\nimport { fileURLToPath } from 'url';\nimport { dirname, resolve } from 'path';\nimport { setupViteMiddleware } from './viteMiddleware.js';\nimport { connect } from './database/client.js';\nimport { DatabaseOperations } from './database/operations.js';\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = dirname(__filename);\n\nconst app = express();\nconst PORT = 3001;\n\n\n// The code below is for database usage. Uncomment in case a database is needed.\n// Initialize database\n// const db = initializeDatabase();\n// const dbOps = new DatabaseOperations(db);\n// Run migrations\n// await runMigrations(db);\n\n// Body parsing middleware\napp.use(express.json());\napp.use(express.urlencoded({ extended: true }));\n\n// API routes\n// app.use('/api', (req, res, next) => {\n//   console.log(`${req.method} ${req.url}`);\n//   next();\n// });\n\napp.get('/api/hello', (req, res) => {\n  res.json({ message: 'Hello World!' });\n});\n\n\n// Setup Vite middleware in development\nif (process.env.NODE_ENV !== 'production') {\n  // await setupViteMiddleware(app);\n} else {\n  // Serve static files in production\n  // app.use(express.static(resolve(__dirname, '../dist')));\n  // app.get('*', (req, res) => {\n  //   res.sendFile(resolve(__dirname, '../dist/index.html'));\n  // });\n}\n\n// Export a function to start the server\nexport async function startServer() {\n  try {\n    app.listen(PORT, () => {\n      console.log(`API Server running on port ${PORT}`);\n    });\n  } catch (err) {\n    console.error('Failed to start server:', err);\n    process.exit(1);\n  }\n}\n\n// Start the server directly if this is the main module\nif (import.meta.url === `file://${process.argv[1]}`) {\n  startServer();\n} ",
-    "codeLanguage": "javascript"
-  },
-  {
-    "name": "server/viteMiddleware.js",
-    "content": "import { createServer } from 'vite';\nimport { resolve } from 'path';\nimport fs from 'fs/promises';\n\nexport async function setupViteMiddleware(app) {\n  const vite = await createServer({\n    server: { middlewareMode: true },\n    appType: 'custom'\n  });\n\n  app.use(vite.middlewares);\n\n  app.use('*', async (req, res, next) => {\n    const url = req.originalUrl;\n\n    try {\n      const template = await fs.readFile(\n        resolve(process.cwd(), 'client/index.html'),\n        'utf-8'\n      );\n      \n      const transformedHtml = await vite.transformIndexHtml(url, template);\n      \n      res.status(200).set({ 'Content-Type': 'text/html' }).end(transformedHtml);\n    } catch (e) {\n      vite.ssrFixStacktrace(e);\n      next(e);\n    }\n  });\n} ",
+    "content": "import express from 'express';\n\nconst app = express();\nconst PORT = 3001;\n\n// Body parsing middleware\napp.use(express.json());\napp.use(express.urlencoded({ extended: true }));\n\napp.get('/api/hello', (req, res) => {\n  res.json({ message: 'Hello World!' });\n});\n\n// Export a function to start the server\nexport async function startServer() {\n  try {\n    app.listen(PORT, () => {\n      console.log(`API Server running on port ${PORT}`);\n    });\n  } catch (err) {\n    console.error('Failed to start server:', err);\n    process.exit(1);\n  }\n}\n\n// Start the server directly if this is the main module\nif (import.meta.url === `file://${process.argv[1]}`) {\n  startServer();\n} ",
     "codeLanguage": "javascript"
   },
   {
@@ -76,7 +56,7 @@
   },
   {
     "name": "vite.config.js",
-    "content": "import { defineConfig } from \"vite\";\nimport react from \"@vitejs/plugin-react\";\nimport path from \"path\";\nimport tailwindcss from \"@tailwindcss/vite\";\n\nexport const vitePort = 3000;\n\nexport default defineConfig({\n  plugins: [react(), tailwindcss()],\n  root: path.join(process.cwd(), \"client\"),\n  build: {\n    outDir: path.join(process.cwd(), \"dist\"),\n    emptyOutDir: true,\n  },\n  server: {\n    host: true,\n    port: vitePort,\n    allowedHosts: true,\n    proxy: {\n      \"/api\": {\n        target: \"http://localhost:3001\",\n        changeOrigin: true,\n      },\n    },\n  },\n});",
+    "content": "import { defineConfig } from \"vite\";\nimport react from \"@vitejs/plugin-react\";\nimport path from \"path\";\n\nexport const vitePort = 3000;\n\nexport default defineConfig({\n  plugins: [react()],\n  root: path.join(process.cwd(), \"client\"),\n  build: {\n    outDir: path.join(process.cwd(), \"dist\"),\n    emptyOutDir: true,\n  },\n  server: {\n    host: true,\n    port: vitePort,\n    allowedHosts: true,\n    proxy: {\n      \"/api\": {\n        target: \"http://localhost:3001\",\n        changeOrigin: true,\n      },\n    },\n  },\n});",
     "codeLanguage": "javascript"
   }
 ]
