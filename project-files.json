@@ -1,62 +1,50 @@
 [
   {
     "name": ".gitignore",
-    "content": "node_modules\nbuild\ndist\n# Database\n*.db\n*.db-journal\n/drizzle\n.vscode",
-    "codeLanguage": "none"
+    "content": "node_modules\nbuild\ndist\n# Database\n*.db\n*.db-journal\n/drizzle\n.vscode"
   },
   {
     "name": ".prettierrc",
-    "content": "{\n  \"singleQuote\": true,\n  \"trailingComma\": \"all\",\n  \"plugins\": [\"prettier-plugin-tailwindcss\"]\n}\n",
-    "codeLanguage": "none"
+    "content": "{\n  \"singleQuote\": true,\n  \"trailingComma\": \"all\",\n  \"plugins\": [\"prettier-plugin-tailwindcss\"]\n}\n"
   },
   {
     "name": "client/index.html",
-    "content": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>No-Code Project Creator</title>\n  </head>\n  <body>\n    <div id=\"root\" class=\"contents\"></div>\n    <script type=\"module\" src=\"/src/main.jsx\"></script>\n  </body>\n</html> ",
-    "codeLanguage": "html"
+    "content": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>No-Code Project Creator</title>\n  </head>\n  <body>\n    <div id=\"root\" class=\"contents\"></div>\n    <script type=\"module\" src=\"/src/main.jsx\"></script>\n  </body>\n</html> "
   },
   {
     "name": "client/src/App.jsx",
-    "content": "import React from 'react';\n\nfunction App() {\n  const [data, setData] = React.useState(null);\n\n  React.useEffect(() => {\n    fetch('/api/hello')\n      .then(response => response.json())\n      .then(data => setData(data))\n      .catch(error => {\n        console.error('Error fetching data:', error);\n      });\n  }, []);\n\n  return (\n    <div className=\"min-h-screen bg-gray-100\">\n      <div className=\"container mx-auto px-4 py-8\">\n        <h1 className=\"text-4xl font-bold text-red-500\">\n          No-Code Project Creator 1\n        </h1>\n        {data && <p>{data.message}</p>}\n      </div>\n    </div>\n  );\n}\n\nexport default App; ",
-    "codeLanguage": "jsx"
+    "content": "import React from 'react';\n\nfunction App() {\n  const [data, setData] = React.useState(null);\n\n  React.useEffect(() => {\n    fetch('/api/hello')\n      .then(response => response.json())\n      .then(data => setData(data))\n      .catch(error => {\n        console.error('Error fetching data:', error);\n      });\n  }, []);\n\n  return (\n    <div className=\"min-h-screen bg-gray-100\">\n      <div className=\"container mx-auto px-4 py-8\">\n        <h1 className=\"text-4xl font-bold text-red-500\">\n          No-Code Project Creator 1\n        </h1>\n        {data && <p>{data.message}</p>}\n      </div>\n    </div>\n  );\n}\n\nexport default App; "
   },
   {
     "name": "client/src/index.css",
-    "content": "@tailwind base;\n@tailwind components;\n@tailwind utilities;",
-    "codeLanguage": "css"
+    "content": "@tailwind base;\n@tailwind components;\n@tailwind utilities;"
   },
   {
     "name": "client/src/main.jsx",
-    "content": "import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\nimport './index.css';\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n); ",
-    "codeLanguage": "jsx"
+    "content": "import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\nimport './index.css';\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n); "
   },
   {
     "name": "package.json",
-    "content": "{\n  \"name\": \"mimo-magic-starter\",\n  \"private\": true,\n  \"version\": \"0.1.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"node scripts/dev.js\",\n    \"dev:vite\": \"vite\",\n    \"dev:server\": \"node server/index.js\",\n    \"build\": \"vite build\",\n    \"start\": \"node scripts/dev.js\",\n    \"files:read\": \"node scripts/readFiles.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.3\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"autoprefixer\": \"^10.4.18\",\n    \"ignore\": \"^7.0.3\",\n    \"postcss\": \"^8.4.35\",\n    \"tailwindcss\": \"^3.4.17\",\n    \"vite\": \"^5.1.4\"\n  }\n}\n",
-    "codeLanguage": "json"
+    "content": "{\n  \"name\": \"mimo-magic-starter\",\n  \"private\": true,\n  \"version\": \"0.1.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"node scripts/dev.js\",\n    \"dev:vite\": \"vite\",\n    \"dev:server\": \"node server/index.js\",\n    \"build\": \"vite build\",\n    \"start\": \"node scripts/dev.js\",\n    \"files:read\": \"node scripts/readFiles.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.3\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.2.1\",\n    \"autoprefixer\": \"^10.4.18\",\n    \"ignore\": \"^7.0.3\",\n    \"postcss\": \"^8.4.35\",\n    \"tailwindcss\": \"^3.4.17\",\n    \"vite\": \"^5.1.4\"\n  }\n}\n"
   },
   {
     "name": "postcss.config.js",
-    "content": "export default {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n} ",
-    "codeLanguage": "javascript"
+    "content": "export default {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n} "
   },
   {
     "name": "scripts/dev.js",
-    "content": "import { createServer } from 'vite';\nimport { startServer } from '../server/index.js';\n\nasync function startDev() {\n  // Start the Express API server first\n  await startServer();\n\n  // Then start Vite in dev mode\n  const vite = await createServer({\n    configFile: './vite.config.js',\n  });\n\n  const x = await vite.listen();\n  console.log(`Vite dev server running on port ${vite.config.server.port}`);\n}\n\nstartDev(); ",
-    "codeLanguage": "javascript"
+    "content": "import { createServer } from 'vite';\nimport { startServer } from '../server/index.js';\n\nasync function startDev() {\n  // Start the Express API server first\n  await startServer();\n\n  // Then start Vite in dev mode\n  const vite = await createServer({\n    configFile: './vite.config.js',\n  });\n\n  const x = await vite.listen();\n  console.log(`Vite dev server running on port ${vite.config.server.port}`);\n}\n\nstartDev(); "
   },
   {
     "name": "server/index.js",
-    "content": "import express from 'express';\n\nconst app = express();\nconst PORT = 3001;\n\n// Body parsing middleware\napp.use(express.json());\napp.use(express.urlencoded({ extended: true }));\n\napp.get('/api/hello', (req, res) => {\n  res.json({ message: 'Hello World!' });\n});\n\n// Export a function to start the server\nexport async function startServer() {\n  try {\n    app.listen(PORT, () => {\n      console.log(`API Server running on port ${PORT}`);\n    });\n  } catch (err) {\n    console.error('Failed to start server:', err);\n    process.exit(1);\n  }\n}\n\n// Start the server directly if this is the main module\nif (import.meta.url === `file://${process.argv[1]}`) {\n  startServer();\n} ",
-    "codeLanguage": "javascript"
+    "content": "import express from 'express';\n\nconst app = express();\nconst PORT = 3001;\n\n// Body parsing middleware\napp.use(express.json());\napp.use(express.urlencoded({ extended: true }));\n\napp.get('/api/hello', (req, res) => {\n  res.json({ message: 'Hello World!' });\n});\n\n// Export a function to start the server\nexport async function startServer() {\n  try {\n    app.listen(PORT, () => {\n      console.log(`API Server running on port ${PORT}`);\n    });\n  } catch (err) {\n    console.error('Failed to start server:', err);\n    process.exit(1);\n  }\n}\n\n// Start the server directly if this is the main module\nif (import.meta.url === `file://${process.argv[1]}`) {\n  startServer();\n} "
   },
   {
     "name": "tailwind.config.js",
-    "content": "export default {\n  content: [\n    \"./client/index.html\",\n    \"./client/src/**/*.{js,jsx}\"\n  ],\n  theme: {\n    extend: {},\n  },\n  plugins: [],\n} ",
-    "codeLanguage": "javascript"
+    "content": "export default {\n  content: [\n    \"./client/index.html\",\n    \"./client/src/**/*.{js,jsx}\"\n  ],\n  theme: {\n    extend: {},\n  },\n  plugins: [],\n} "
   },
   {
     "name": "vite.config.js",
-    "content": "import { defineConfig } from \"vite\";\nimport react from \"@vitejs/plugin-react\";\nimport path from \"path\";\n\nexport const vitePort = 3000;\n\nexport default defineConfig({\n  plugins: [react()],\n  root: path.join(process.cwd(), \"client\"),\n  build: {\n    outDir: path.join(process.cwd(), \"dist\"),\n    emptyOutDir: true,\n  },\n  server: {\n    host: true,\n    port: vitePort,\n    allowedHosts: true,\n    proxy: {\n      \"/api\": {\n        target: \"http://localhost:3001\",\n        changeOrigin: true,\n      },\n    },\n  },\n});",
-    "codeLanguage": "javascript"
+    "content": "import { defineConfig } from \"vite\";\nimport react from \"@vitejs/plugin-react\";\nimport path from \"path\";\n\nexport const vitePort = 3000;\n\nexport default defineConfig({\n  plugins: [react()],\n  root: path.join(process.cwd(), \"client\"),\n  build: {\n    outDir: path.join(process.cwd(), \"dist\"),\n    emptyOutDir: true,\n  },\n  server: {\n    host: true,\n    port: vitePort,\n    allowedHosts: true,\n    proxy: {\n      \"/api\": {\n        target: \"http://localhost:3001\",\n        changeOrigin: true,\n      },\n    },\n  },\n});"
   }
 ]

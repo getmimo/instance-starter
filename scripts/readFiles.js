@@ -32,58 +32,6 @@ async function getGitignoreFilter() {
   }
 }
 
-/**
- * Get coding language based on file extension
- * @param {string} filename - Name of the file
- * @returns {string} Coding language
- */
-function getCodeLanguage(filename) {
-  const ext = path.extname(filename).toLowerCase();
-  switch (ext) {
-    case '.sh':
-      return 'bash';
-    case '.cpp':
-    case '.c':
-    case '.h':
-      return 'cpp';
-    case '.cs':
-      return 'csharp';
-    case '.css':
-      return 'css';
-    case '.html':
-    case '.htm':
-      return 'html';
-    case '.java':
-      return 'java';
-    case '.js':
-      return 'javascript';
-    case '.jsx':
-      return 'jsx';
-    case '.kt':
-      return 'kotlin';
-    case '.lua':
-      return 'lua';
-    case '.php':
-      return 'php';
-    case '.py':
-      return 'python';
-    case '.r':
-      return 'r';
-    case '.rb':
-      return 'ruby';
-    case '.sql':
-      return 'sql';
-    case '.json':
-      return 'json';
-    case '.swift':
-      return 'swift';
-    case '.ts':
-    case '.tsx':
-      return 'typescript';
-    default:
-      return 'none';
-  }
-}
 
 /**
  * Recursively read all files in a directory
@@ -113,7 +61,6 @@ async function readFilesRecursively(dir, ig) {
         files.push({
           name: relativePath,
           content: content,
-          codeLanguage: getCodeLanguage(entry.name)
         });
       } catch (error) {
         console.error(`Error reading file ${fullPath}:`, error);
