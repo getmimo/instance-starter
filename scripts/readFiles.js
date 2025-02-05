@@ -12,7 +12,7 @@ const ADDITIONAL_EXCLUDES = [
   'scripts/readFiles.js',
   '.git',
   'package-lock.json',
-  'project-files.json'
+  'project-files.json',
 ];
 
 /**
@@ -21,17 +21,17 @@ const ADDITIONAL_EXCLUDES = [
  */
 async function getGitignoreFilter() {
   try {
-    const gitignoreContent = await fs.readFile(path.join(rootDir, '.gitignore'), 'utf-8');
-    const ig = ignore()
-      .add(gitignoreContent)
-      .add(ADDITIONAL_EXCLUDES);
+    const gitignoreContent = await fs.readFile(
+      path.join(rootDir, '.gitignore'),
+      'utf-8',
+    );
+    const ig = ignore().add(gitignoreContent).add(ADDITIONAL_EXCLUDES);
     return ig;
   } catch (error) {
     console.error('Error reading .gitignore:', error);
     return ignore().add(ADDITIONAL_EXCLUDES);
   }
 }
-
 
 /**
  * Recursively read all files in a directory
@@ -78,7 +78,7 @@ async function main() {
   try {
     const ig = await getGitignoreFilter();
     const files = await readFilesRecursively(rootDir, ig);
-    
+
     // Save to JSON file
     const outputPath = path.join(rootDir, 'project-files.json');
     await fs.writeFile(outputPath, JSON.stringify(files, null, 2));
@@ -89,4 +89,4 @@ async function main() {
   }
 }
 
-main(); 
+main();

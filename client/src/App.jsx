@@ -1,13 +1,14 @@
 import React from 'react';
+import { Button } from '@/components/ui/button';
 
 function App() {
   const [data, setData] = React.useState(null);
 
   React.useEffect(() => {
     fetch('/api/hello')
-      .then(response => response.json())
-      .then(data => setData(data))
-      .catch(error => {
+      .then((response) => response.json())
+      .then((data) => setData(data))
+      .catch((error) => {
         console.error('Error fetching data:', error);
       });
   }, []);
@@ -19,9 +20,11 @@ function App() {
           No-Code Project Creator 1
         </h1>
         {data && <p>{data.message}</p>}
+        <Button>Click me</Button>
+        <Button variant="outline">Button</Button>
       </div>
     </div>
   );
 }
 
-export default App; 
+export default App;
