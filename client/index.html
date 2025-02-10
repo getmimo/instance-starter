@@ -4,9 +4,77 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>No-Code Project Creator</title>
+    <script>
+      // Save the current console log function in case we need it.
+      const _log = console.log;
+      const _debug = console.debug;
+      const _info = console.info;
+      const _warn = console.warn;
+      const _error = console.error;
+      // Override the console
+      console.log = function (...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'log',
+          },
+          '*',
+        );
+        _log.apply(console, arguments);
+      };
+
+      console.debug = function (...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'debug',
+          },
+          '*',
+        );
+        _debug.apply(console, arguments);
+      };
+
+      console.info = function (...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'info',
+          },
+          '*',
+        );
+        _info.apply(console, arguments);
+      };
+
+      console.warn = function (...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'warn',
+          },
+          '*',
+        );
+        _warn.apply(console, arguments);
+      };
+
+      console.error = function (...rest) {
+        window.parent.postMessage(
+          {
+            source: 'iframe-' + window.name,
+            message: rest,
+            method: 'error',
+          },
+          '*',
+        );
+        _error.apply(console, arguments);
+      };
+    </script>
   </head>
   <body>
     <div id="root" class="contents"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
-</html> 
+</html>
