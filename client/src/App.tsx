@@ -1,8 +1,11 @@
-import React from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
+import { greet, username } from './test-error';
 
 function App() {
   const [data, setData] = React.useState(null);
+
+  console.log(greet('World'));
 
   React.useEffect(() => {
     fetch('/api/hello')

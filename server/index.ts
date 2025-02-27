@@ -7,7 +7,7 @@ const PORT = 3001;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/hello', (req, res) => {
+app.get('/api/hello', (req: express.Request, res: express.Response) => {
   res.json({ message: 'Hello World!' });
 });
 
@@ -24,6 +24,6 @@ export async function startServer() {
 }
 
 // Start the server directly if this is the main module
-if (import.meta.url === `file://${process.argv[1]}`) {
-  startServer();
-} 
+// if (require.main === module) {
+  // startServer();
+// }
