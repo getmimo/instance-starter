@@ -8,7 +8,7 @@
     "dev:vite": "vite",
     "dev:server": "node server/index.js",
     "build": "vite build",
-    "start": "tsx scripts/dev.ts",
+    "start": "node node_modules/tsx/dist/cli.cjs scripts/dev.ts",
     "files:read": "node scripts/readFiles.js"
   },
   "dependencies": {

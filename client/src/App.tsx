@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { greet, username } from './test-error';
 
 function App() {
   const [data, setData] = React.useState(null);
 
-  console.log(greet('World'));
 
   React.useEffect(() => {
     fetch('/api/hello')
@@ -20,7 +18,7 @@ function App() {
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-red-500">
-          No-Code Project Creator 1
+          No-Code Project Creator 2
         </h1>
         {data && <p>{data.message}</p>}
         <Button>Click me</Button>
