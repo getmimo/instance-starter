@@ -13,6 +13,7 @@ const ADDITIONAL_EXCLUDES = [
   '.git',
   'package-lock.json',
   'project-files.json',
+  'test/**',
 ];
 
 /**

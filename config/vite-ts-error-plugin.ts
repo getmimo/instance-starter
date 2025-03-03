@@ -29,34 +29,64 @@ function formatDiagnostic(diagnostic: Diagnostic): string {
   return `Error in ${fileName}(${line + 1},${character + 1}):\n${message}`;
 }
 
+// Add a program cache to avoid recreating the program for every check
+let programCache: {
+  program: any; // Use any to avoid TypeScript namespace issues
+  fileVersions: Map<string, string>;
+} | null = null;
+
+// Track errors by file path
+const errorsByFile = new Map<string, Diagnostic[]>();
+
 // Type check a file and return diagnostics
 function typeCheckFile(fileName: string, compilerOptions: any): Diagnostic[] {
   try {
-    console.log('fileName', fileName);
-    console.time('typeCheckFile');
+    // Check if we need to create or update the program
+    if (!programCache) {
+      const program = ts.createProgram([fileName], compilerOptions);
+      // Initialize cache
+      programCache = {
+        program,
+        fileVersions: new Map([[fileName, fs.readFileSync(fileName, 'utf8')]]),
+      };
+    } else {
+      // Check if the file has changed
+      const currentContent = fs.readFileSync(fileName, 'utf8');
+      const cachedContent = programCache.fileVersions.get(fileName);
 
-    const startProgram = performance.now();
-    const program = ts.createProgram([fileName], compilerOptions);
-    console.log(`Creating program took ${performance.now() - startProgram}ms`);
+      if (currentContent !== cachedContent) {
+        // Update the program with the new file content
+        programCache.fileVersions.set(fileName, currentContent);
 
-    const startDiagnostics = performance.now();
-    const diagnostics = ts.getPreEmitDiagnostics(program);
-    console.log(
-      `Getting diagnostics took ${performance.now() - startDiagnostics}ms`,
-    );
+        // Create a new program that reuses the old one
+        programCache.program = ts.createProgram(
+          [fileName],
+          compilerOptions,
+          undefined,
+          programCache.program, // Reuse the old program
+        );
+      }
+    }
 
-    const startConversion = performance.now();
-    const result = Array.from(diagnostics);
-    console.log(
-      `Converting diagnostics took ${performance.now() - startConversion}ms`,
-    );
+    // Get diagnostics only for the specific file
+    const sourceFile = programCache.program.getSourceFile(fileName);
 
-    console.timeEnd('typeCheckFile');
-    return result;
+    // Only get diagnostics for this specific file
+    const diagnostics = sourceFile
+      ? ts.getPreEmitDiagnostics(programCache.program, sourceFile)
+      : [];
+
+    return Array.from(diagnostics);
   } catch (error) {
-    console.error('Error type checking file:', error);
+    // Reset cache on error
+    programCache = null;
     return [];
   }
+}
+
+// Add a function to clear the cache when needed
+function clearTypeCheckCache() {
+  programCache = null;
 }
 
 export default function tsErrorOverlayPlugin(): Plugin {
@@ -79,6 +109,12 @@ export default function tsErrorOverlayPlugin(): Plugin {
         console.error('Error reading tsconfig.json:', error);
         compilerOptions = {};
       }
+
+      // Clear the cache when config is resolved
+      clearTypeCheckCache();
+
+      // Clear error tracking when config is resolved
+      errorsByFile.clear();
     },
 
     // Handle errors during development
@@ -90,11 +126,15 @@ export default function tsErrorOverlayPlugin(): Plugin {
       // Type check the file
       const diagnostics = typeCheckFile(file, compilerOptions);
 
+      // Check if this file previously had errors
+      const hadErrors = errorsByFile.has(file);
+
       if (diagnostics.length > 0) {
+        // Store the diagnostics for this file
+        errorsByFile.set(file, diagnostics);
+
         // Format the diagnostics for display
         const formattedErrors = diagnostics.map(formatDiagnostic).join('\n\n');
-
-        console.log(formattedErrors);
 
         // Send the error to the client using a custom event that our overlay will listen for
         server.ws.send({
@@ -110,19 +150,24 @@ export default function tsErrorOverlayPlugin(): Plugin {
           },
         });
 
-        // Also send as a standard error
-        server.ws.send({
-          type: 'error',
-          err: {
-            message: formattedErrors,
-            stack: '',
-            plugin: 'vite-ts-error-overlay',
-            id: file,
-          },
-        });
-
         // Allow HMR to proceed but mark the update as handled
-        return modules;
+      } else if (hadErrors) {
+        // File had errors before but now it's fixed
+        // Remove this file from error tracking
+        errorsByFile.delete(file);
+
+        // Only send resolution message if all errors are resolved
+        if (errorsByFile.size === 0) {
+          // Send resolution message to client
+          server.ws.send({
+            type: 'custom',
+            event: 'vite:error:resolved',
+            data: {
+              plugin: 'vite-ts-error-overlay',
+            },
+          });
+        } else {
+        }
       }
     },
 
