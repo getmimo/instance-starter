@@ -23,6 +23,10 @@ if ((import.meta as any).hot) {
     }
   });
 
+  (import.meta as any).hot.on('vite:babel-error', (data: any) => {
+    console.log('BABEL ERROR', data);
+  });
+
   // Listen for error resolution events
   (import.meta as any).hot.on('vite:error:resolved', (data: any) => {
     if (data && data.plugin === 'vite-ts-error-overlay') {
