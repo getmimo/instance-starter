@@ -22,8 +22,3 @@ export async function startServer() {
     process.exit(1);
   }
 }
-
-// Start the server directly if this is the main module
-// if (require.main === module) {
-  // startServer();
-// }
