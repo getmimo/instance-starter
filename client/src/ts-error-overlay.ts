@@ -3,23 +3,36 @@
 
 import { setTypeScriptError, clearTypeScriptError } from './ErrorBoundary';
 
+// Track current errors to avoid duplicates
+let currentError: string | null = null;
+
 // Listen for error messages from our plugin
 if ((import.meta as any).hot) {
   console.log('[TS Error Overlay] Setting up HMR listeners');
 
   // Listen for custom error events from our plugin
   (import.meta as any).hot.on('vite:error', (data: any) => {
+    console.log('[TS Error Overlay] Received error:', data);
     if (data && data.plugin === 'vite-ts-error-overlay') {
-      // Use the new approach to throw errors within React's component tree
-      setTypeScriptError(data.err.message, data.err.stack);
+      // Avoid duplicate errors
+      if (currentError !== data.err.message) {
+        currentError = data.err.message;
+        // Use the new approach to throw errors within React's component tree
+        setTypeScriptError(data.err.message, data.err.stack);
+      }
     }
   });
 
   // Also listen for standard error events
   (import.meta as any).hot.on('error', (data: any) => {
+    console.log('[TS Error Overlay] Received standard error:', data);
     if (data && data.plugin === 'vite-ts-error-overlay') {
-      // Use the new approach to throw errors within React's component tree
-      setTypeScriptError(data.err.message, data.err.stack);
+      // Avoid duplicate errors
+      if (currentError !== data.err.message) {
+        currentError = data.err.message;
+        // Use the new approach to throw errors within React's component tree
+        setTypeScriptError(data.err.message, data.err.stack);
+      }
     }
   });
 
@@ -29,10 +42,10 @@ if ((import.meta as any).hot) {
 
   // Listen for error resolution events
   (import.meta as any).hot.on('vite:error:resolved', (data: any) => {
+    console.log('[TS Error Overlay] Error resolved:', data);
     if (data && data.plugin === 'vite-ts-error-overlay') {
-      // setTimeout(() => {
+      currentError = null;
       clearTypeScriptError();
-      // }, 1);
     }
   });
 }
@@ -43,9 +56,21 @@ export function showTypeScriptError(
   error: Error = new Error(message),
   errorInfo: React.ErrorInfo = { componentStack: '' } as React.ErrorInfo,
 ) {
-  setTypeScriptError(message, error?.stack);
+  console.log(
+    '[TS Error Overlay] Showing error:',
+    message,
+    currentError !== message,
+  );
+  // Avoid duplicate errors
+  if (currentError !== message) {
+    currentError = message;
+    setTypeScriptError(message, error?.stack);
+    console.error('Mimo Custom Component Error:', message, error?.stack);
+  }
 }
 
 export function hideTypeScriptError() {
+  console.log('[TS Error Overlay] Hiding error');
+  currentError = null;
   clearTypeScriptError();
 }

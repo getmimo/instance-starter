@@ -57,10 +57,16 @@ function typeCheckFile(fileName: string, compilerOptions: any): Diagnostic[] {
       if (currentContent !== cachedContent) {
         // Update the program with the new file content
         programCache.fileVersions.set(fileName, currentContent);
+        const rootFileNames = programCache.program.getRootFileNames();
+
+        // Make sure the current file is included
+        if (!rootFileNames.includes(fileName)) {
+          rootFileNames.push(fileName);
+        }
 
         // Create a new program that reuses the old one
         programCache.program = ts.createProgram(
-          [fileName],
+          rootFileNames,
           compilerOptions,
           undefined,
           programCache.program, // Reuse the old program
@@ -75,6 +81,11 @@ function typeCheckFile(fileName: string, compilerOptions: any): Diagnostic[] {
     const diagnostics = sourceFile
       ? ts.getPreEmitDiagnostics(programCache.program, sourceFile)
       : [];
+
+    // const semanticDiagnostics =
+    //   programCache.program.getSemanticDiagnostics(sourceFile);
+    // console.log('diagnostics', diagnostics);
+    // console.log('semanticDiagnostics', semanticDiagnostics);
 
     return Array.from(diagnostics);
   } catch (error) {
@@ -94,6 +105,110 @@ export default function tsErrorOverlayPlugin(): Plugin {
 
   return {
     name: 'vite-ts-error-overlay',
+    // Higher priority than Vite's error overlay plugin
+    enforce: 'pre',
+    // Transform the index.html to inject our error handling script
+    transformIndexHtml(html) {
+      // Only inject the script in development mode
+      if (process.env.NODE_ENV !== 'production') {
+        // Get all current errors to inject
+        const allErrors = Array.from(errorsByFile.entries()).map(([file, diagnostics]) => {
+          return {
+            file,
+            errors: diagnostics.map(formatDiagnostic)
+          };
+        });
+        
+        // Add a script tag before the closing body tag to initialize our error handler
+        return html.replace(
+          '</body>',
+          `<script type="module">
+            // Initialize TypeScript error overlay
+            console.log('[TS Error Overlay] Initialized');
+            
+            // Import the error overlay module to display any existing errors
+            import('/@fs${path
+              .resolve(process.cwd(), 'client/src/ts-error-overlay.ts')
+              .replace(/\\/g, '/')}')
+              .then(module => {
+                if (module && typeof module.showTypeScriptError === 'function') {
+                  // Check if there are any pending errors to display
+                  const errors = ${JSON.stringify(allErrors)};
+                  if (errors && errors.length > 0) {
+                    // Display the first error
+                    const firstError = errors[0];
+                    const errorMessage = \`TypeScript Error in \${firstError.file}:\\n\${firstError.errors.join('\\n')}\`;
+                    module.showTypeScriptError(errorMessage);
+                    console.error('[TS Error]', errorMessage);
+                  }
+                }
+              })
+              .catch(err => console.error('Failed to import error overlay:', err));
+          </script>
+          </body>`
+        );
+      }
+      return html;
+    },
+
+    // Configure server to handle TypeScript errors
+    configureServer(server) {
+      // Create a custom middleware to check for TypeScript errors on initial page load
+      server.middlewares.use((req, res, next) => {
+        if (
+          (!req.url.endsWith('.ts') && !req.url.endsWith('.tsx')) ||
+          req.url.includes('node_modules')
+        ) {
+          next();
+          return;
+        }
+
+        console.log('Checking TypeScript file:', req.url);
+        
+        // Type check the file
+        // Convert relative URL to absolute file path
+        const absolutePath = path.resolve(
+          process.cwd(),
+          'client',
+          req.url.startsWith('/') ? req.url.slice(1) : req.url,
+        );
+        
+        // Get a consistent relative path for error tracking
+        const relativePath = path.relative(process.cwd(), absolutePath);
+        
+        const diagnostics = typeCheckFile(absolutePath, compilerOptions);
+
+        if (diagnostics.length > 0) {
+          // Store the diagnostics for this file using the relative path
+          errorsByFile.set(relativePath, diagnostics);
+
+          // Format the diagnostics for display
+          const formattedErrors = diagnostics
+            .map(formatDiagnostic)
+            .join('\n\n');
+
+          console.log('TypeScript errors found:', formattedErrors);
+
+          // Send the error to the client using a custom event that our overlay will listen for
+          setTimeout(() => {
+            server.ws.send({
+              type: 'custom',
+              event: 'vite:error',
+              data: {
+                err: {
+                  message: formattedErrors,
+                  stack: '',
+                },
+                plugin: 'vite-ts-error-overlay',
+                id: relativePath,
+              },
+            });
+          }, 1000);
+        }
+
+        next();
+      });
+    },
 
     configResolved(config) {
       // Get the TypeScript configuration
@@ -123,18 +238,23 @@ export default function tsErrorOverlayPlugin(): Plugin {
         return;
       }
 
+      // Get the relative path for error tracking
+      const relativePath = path.relative(process.cwd(), file);
+      console.log('Type checking file:', relativePath);
+      
       // Type check the file
       const diagnostics = typeCheckFile(file, compilerOptions);
 
       // Check if this file previously had errors
-      const hadErrors = errorsByFile.has(file);
+      const hadErrors = errorsByFile.has(relativePath);
 
       if (diagnostics.length > 0) {
         // Store the diagnostics for this file
-        errorsByFile.set(file, diagnostics);
+        errorsByFile.set(relativePath, diagnostics);
 
         // Format the diagnostics for display
         const formattedErrors = diagnostics.map(formatDiagnostic).join('\n\n');
+        console.log('TypeScript errors found:', formattedErrors);
 
         // Send the error to the client using a custom event that our overlay will listen for
         server.ws.send({
@@ -146,28 +266,25 @@ export default function tsErrorOverlayPlugin(): Plugin {
               stack: '',
             },
             plugin: 'vite-ts-error-overlay',
-            id: file,
+            id: relativePath,
           },
         });
 
-        // Allow HMR to proceed but mark the update as handled
+        // Allow HMR to proceed
       } else if (hadErrors) {
         // File had errors before but now it's fixed
         // Remove this file from error tracking
-        errorsByFile.delete(file);
+        errorsByFile.delete(relativePath);
+        console.log('TypeScript errors resolved in:', relativePath);
 
-        // Only send resolution message if all errors are resolved
-        if (errorsByFile.size === 0) {
-          // Send resolution message to client
-          server.ws.send({
-            type: 'custom',
-            event: 'vite:error:resolved',
-            data: {
-              plugin: 'vite-ts-error-overlay',
-            },
-          });
-        } else {
-        }
+        // Send resolution message to client
+        server.ws.send({
+          type: 'custom',
+          event: 'vite:error:resolved',
+          data: {
+            plugin: 'vite-ts-error-overlay',
+          },
+        });
       }
     },
 
@@ -178,12 +295,19 @@ export default function tsErrorOverlayPlugin(): Plugin {
         return null;
       }
 
+      // Get a consistent relative path for error tracking
+      const relativePath = path.relative(process.cwd(), id);
+      
       // Check for type errors
       const diagnostics = typeCheckFile(id, compilerOptions);
-      // console.log(diagnostics)
+      
       if (diagnostics.length > 0) {
+        // Store the diagnostics for consistent error tracking
+        errorsByFile.set(relativePath, diagnostics);
+        
         // Format errors and inject code to show the error overlay
         const formattedErrors = diagnostics.map(formatDiagnostic).join('\n\n');
+        console.log('TypeScript errors found during transform:', relativePath);
 
         // Instead of throwing an error, import and use our custom error overlay
         const errorCode = `
@@ -206,6 +330,9 @@ export default function tsErrorOverlayPlugin(): Plugin {
           code: errorCode + '\n' + code,
           map: null,
         };
+      } else if (errorsByFile.has(relativePath)) {
+        // File had errors before but now it's fixed
+        errorsByFile.delete(relativePath);
       }
 
       return null;

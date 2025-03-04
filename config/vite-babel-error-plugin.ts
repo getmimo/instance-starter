@@ -68,6 +68,107 @@ export function viteBabelErrorPlugin(): Plugin {
       patchWebSocketServer(server);
     },
 
+    // Intercept errors from the React-Babel plugin
+    configResolved(config) {
+      // Find the React plugin
+      const reactPlugin = config.plugins.find(
+        (p) =>
+          p.name === 'vite:react-babel' ||
+          p.name === '@vitejs/plugin-react' ||
+          p.name === 'vite:react-refresh',
+      );
+
+      if (reactPlugin && reactPlugin.transform) {
+        // Store the original transform function
+        const originalTransform = reactPlugin.transform;
+
+        // Override the transform function to catch errors
+        // We need to handle both function and object with handler property
+        if (typeof originalTransform === 'function') {
+          reactPlugin.transform = function (code, id, options) {
+            try {
+              
+              return originalTransform.call(this, code, id, options);
+            } catch (error) {
+              console.log('transform');
+              if (isBabelError(error) && !handledError) {
+                handledError = true;
+
+                // Format and store the error for our handler
+                const formattedError = formatBabelError(error);
+
+                // Store the error in a global variable that our client code can access
+                (global as any).__VITE_BABEL_ERROR__ = formattedError;
+
+                // Return empty code to prevent further errors
+                return {
+                  code: `
+                    // Error intercepted by vite-babel-error-handler
+                    console.error('[Babel Error]', ${JSON.stringify(
+                      error.message,
+                    )});
+                    
+                    // Dispatch error event
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('vite:babel-error', { 
+                        detail: ${JSON.stringify(formattedError)} 
+                      }));
+                    }
+                  `,
+                  map: null,
+                };
+              }
+
+              // Re-throw if not a Babel error or already handled
+              throw error;
+            }
+          };
+        } else if (
+          typeof originalTransform === 'object' &&
+          originalTransform.handler
+        ) {
+          // Handle the case where transform is an object with a handler property
+          const originalHandler = originalTransform.handler;
+          originalTransform.handler = function (code, id, options) {
+            try {
+              return originalHandler.call(this, code, id, options);
+            } catch (error) {
+              if (isBabelError(error) && !handledError) {
+                handledError = true;
+
+                // Format and store the error for our handler
+                const formattedError = formatBabelError(error);
+
+                // Store the error in a global variable that our client code can access
+                (global as any).__VITE_BABEL_ERROR__ = formattedError;
+
+                // Return empty code to prevent further errors
+                return {
+                  code: `
+                    // Error intercepted by vite-babel-error-handler
+                    console.error('[Babel Error]', ${JSON.stringify(
+                      error.message,
+                    )});
+                    
+                    // Dispatch error event
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('vite:babel-error', { 
+                        detail: ${JSON.stringify(formattedError)} 
+                      }));
+                    }
+                  `,
+                  map: null,
+                };
+              }
+
+              // Re-throw if not a Babel error or already handled
+              throw error;
+            }
+          };
+        }
+      }
+    },
+
     // Hook into the build process to catch errors early
     buildStart() {
       // Reset handled error flag at the start of each build
@@ -75,6 +176,10 @@ export function viteBabelErrorPlugin(): Plugin {
     },
   };
 }
+
+
+    
+
 
 /**
  * Patch the WebSocket server to prevent Vite from sending error overlays
