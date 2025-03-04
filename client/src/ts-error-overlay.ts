@@ -6,7 +6,6 @@ let currentError: string | null = null;
 
 // Function to create and show the error overlay
 export function showErrorOverlay(message: string, stack?: string): void {
-  console.log('showErrorOverlay', message, stack);
   // First, hide any existing overlay
   hideErrorOverlay();
 
@@ -125,7 +124,6 @@ function hideErrorOverlay(): void {
 window.addEventListener(
   'error',
   (event) => {
-    console.log('error', event);
     if (
       event.message &&
       event.message.includes('Mimo Custom Component Error:')
@@ -136,7 +134,8 @@ window.addEventListener(
     if (
       event.error instanceof SyntaxError ||
       (event.message && event.message.includes('Uncaught SyntaxError')) ||
-      (event.message && event.message.includes('Uncaught ReferenceError')) ||
+      (event.message && event.message.includes('ReferenceError')) ||
+      (event.message && event.message.includes('Uncaught TypeError')) ||
       (event.message && event.message.includes('[vite] Internal Server Error'))
     ) {
       const errorMessage = event.message || 'Unknown Syntax Error';
@@ -159,7 +158,6 @@ window.addEventListener(
 // Intercept console.error to filter Vite-related errors
 const originalConsoleError = console.error;
 console.error = function (...args: any[]) {
-  console.log('error overwritten', args);
   const isAllreadyHandled = args.some(
     (arg) =>
       typeof arg === 'string' && arg.includes('Mimo Custom Component Error:'),
@@ -183,6 +181,7 @@ console.error = function (...args: any[]) {
         arg.includes('Vite') ||
         arg.includes('SyntaxError:') ||
         arg.includes('ReferenceError:') ||
+        arg.includes('Uncaught TypeError:') ||
         arg.includes('vite:')),
   );
 
@@ -198,7 +197,6 @@ console.error = function (...args: any[]) {
 
   const errorMessage = args
     .map((arg) => {
-      console.log('arg', typeof arg, arg);
       if (typeof arg === 'string') {
         return arg;
       } else if (arg instanceof Error) {
@@ -223,7 +221,6 @@ console.error = function (...args: any[]) {
   if (isUncaughtSyntaxError) {
     // Still show in the overlay
     if (currentError !== errorMessage) {
-      console.log('isUncaughtSyntaxError');
       showErrorOverlay(errorMessage);
     }
   }
@@ -231,7 +228,6 @@ console.error = function (...args: any[]) {
   else if (isViteError || isViteStackError) {
     // Only set if not already showing this error
     if (currentError !== errorMessage) {
-      console.log('isViteError', errorMessage, args);
       showErrorOverlay(errorMessage);
     }
   } else {
@@ -242,68 +238,75 @@ console.error = function (...args: any[]) {
 
 // Listen for error messages from our plugin
 if ((import.meta as any).hot) {
-  console.log('[TS Error Overlay] Setting up HMR listeners');
-
   // Listen for successful updates from Vite
   (import.meta as any).hot.on('vite:beforeUpdate', (data: any) => {
     hideErrorOverlay();
+    showLoadingIndicator();
+  });
+  (import.meta as any).hot.on('vite:afterUpdate', (data: any) => {
+    hideLoadingIndicator();
   });
 
-  // (import.meta as any).hot.on('js-update', (data: any) => {
-  //   console.log('js-update', data);
-  // });
+  // Function to add a loading indicator to the top right of the screen
+  function showLoadingIndicator(): void {
+    // Remove any existing indicator first
+    hideLoadingIndicator();
 
-  // Listen for custom error events from our plugin
-  // (import.meta as any).hot.on('vite:error', (data: any) => {
-  //   console.log('[TS Error Overlay] Received error:', data);
-  //   if (data && data.plugin === 'vite-ts-error-overlay') {
-  //     // Avoid duplicate errors
-  //     if (currentError !== data.err.message) {
-  //       currentError = data.err.message;
-  //       // Use the new approach to throw errors within React's component tree
-  //       setTypeScriptError(data.err.message, data.err.stack);
-  //     }
-  //   }
-  // });
+    // Create the loading indicator container
+    const indicator = document.createElement('div');
+    indicator.id = 'ts-loading-indicator';
+    indicator.style.position = 'fixed';
+    indicator.style.top = '16px';
+    indicator.style.right = '16px';
+    indicator.style.zIndex = '9998';
+    indicator.style.width = '32px';
+    indicator.style.height = '32px';
 
-  // Also listen for standard error events
-  // (import.meta as any).hot.on('error', (data: any) => {
-  //   console.log('[TS Error Overlay] Received standard error:', data);
-  //   if (data && data.plugin === 'vite-ts-error-overlay') {
-  //     // Avoid duplicate errors
-  //     if (currentError !== data.err.message) {
-  //       currentError = data.err.message;
-  //       // Use the new approach to throw errors within React's component tree
-  //       setTypeScriptError(data.err.message, data.err.stack);
-  //     }
-  //   }
-  // });
+    // Create SVG spinner
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.animation = 'ts-loading-spin 1s linear infinite';
 
-  // Listen for error resolution events
-  // (import.meta as any).hot.on('vite:error:resolved', (data: any) => {
-  //   console.log('[TS Error Overlay] Error resolved:', data);
-  //   if (data && data.plugin === 'vite-ts-error-overlay') {
-  //     currentError = null;
-  //     clearTypeScriptError();
-  //   }
-  // });
-}
+    // Create the circular path
+    const circle = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    circle.setAttribute('cx', '12');
+    circle.setAttribute('cy', '12');
+    circle.setAttribute('r', '10');
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', '#8b5cf6');
+    circle.setAttribute('stroke-width', '3');
+    circle.setAttribute('stroke-dasharray', '60 30');
 
-// Export a function to manually show errors if needed
-export function showTypeScriptError(
-  message: string,
-  error: Error = new Error(message),
-  errorInfo: React.ErrorInfo = { componentStack: '' } as React.ErrorInfo,
-) {
-  if (currentError !== message) {
-    currentError = message;
-    // setTypeScriptError(message, error?.stack);
-    console.error('Mimo Custom Component Error:', message, error?.stack);
+    // Add the circle to the SVG
+    svg.appendChild(circle);
+
+    // Add the SVG to the indicator
+    indicator.appendChild(svg);
+
+    // Add the animation style
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ts-loading-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Add the indicator to the document
+    document.body.appendChild(indicator);
   }
-}
 
-export function hideTypeScriptError() {
-  console.log('[TS Error Overlay] Hiding error');
-  currentError = null;
-  // clearTypeScriptError();
+  // Function to remove the loading indicator
+  function hideLoadingIndicator(): void {
+    const indicator = document.getElementById('ts-loading-indicator');
+    if (indicator) {
+      indicator.remove();
+    }
+  }
 }

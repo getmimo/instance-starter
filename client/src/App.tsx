@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
+
 // Extract the error message
 function App() {
   const [data, setData] = React.useState<any>(null);
@@ -21,7 +22,6 @@ function App() {
         </h1>
         {data && <p>{data.message}</p>}
         <Button>Click me</Button>
-        {/* <Button variant="outline">Button</Button> */}
       </div>
     </div>
   );
