@@ -1,20 +1,9 @@
 import * as React from 'react';
-import { Button2 } from '@/components/ui/button';
-import { showTypeScriptError } from './ts-error-overlay';
-import './ts-error-overlay';
-
+import { Button } from '@/components/ui/button';
+// Extract the error message
 function App() {
   const [data, setData] = React.useState<any>(null);
 
-  const triggerError = () => {
-    console.log('Manually triggering TypeScript error');
-    showTypeScriptError(
-      'This is a manually triggered TypeScript error for testing',
-    );
-  };
-
-
-  
   React.useEffect(() => {
     fetch('/api/hello')
       .then((response) => response.json())
@@ -31,24 +20,8 @@ function App() {
           No-Code Project Creator 2
         </h1>
         {data && <p>{data.message}</p>}
-        <Button2>Click me</Button2>
+        <Button>Click me</Button>
         {/* <Button variant="outline">Button</Button> */}
-        <div style={{ marginTop: '20px' }}>
-          <button
-            onClick={triggerError}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#e83b46',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            Test Error Boundary
-          </button>
-        </div>
       </div>
     </div>
   );
