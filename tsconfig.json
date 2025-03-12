@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "jsx": "react",
+    "jsx": "preserve",
     "strict": false,
     "esModuleInterop": true,
     "module": "esnext",
@@ -15,7 +15,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./client/src/*"]
+      "@/*": ["./client/src/*"],
     }
   }
 }

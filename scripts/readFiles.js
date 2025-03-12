@@ -13,6 +13,8 @@ const ADDITIONAL_EXCLUDES = [
   '.git',
   'package-lock.json',
   'project-files.json',
+  'dist/**',
+  'scripts/ts-error-overlay.ts',
   'test/**',
 ];
 
