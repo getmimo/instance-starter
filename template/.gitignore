@@ -1,0 +1,8 @@
+node_modules
+build
+dist
+# Database
+*.db
+*.db-journal
+/drizzle
+.vscode
