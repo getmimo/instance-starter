@@ -17,9 +17,6 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies
-        working-directory: template
-        run: npm ci
       - name: Create archive
         run: |
           cd template && tar -czf ../template.tar.gz .
